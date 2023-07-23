@@ -182,11 +182,7 @@ def smoke_test(executable: pathlib.Path, debug: bool, qt5: bool) -> None:
             r'module could not be found. \(0x7E\)'),
         ])
 
-    proc = _smoke_test_run(executable, capture_output=not debug)
-    if debug:
-        print("Skipping output check for debug build")
-        proc.check_returncode()
-        return
+    proc = _smoke_test_run(executable)
 
     stdout = '\n'.join(_filter_whitelisted(proc.stdout, stdout_whitelist))
     stderr = '\n'.join(_filter_whitelisted(proc.stderr, stderr_whitelist))
@@ -195,9 +191,13 @@ def smoke_test(executable: pathlib.Path, debug: bool, qt5: bool) -> None:
         print(
             f"Unexpected output, running with --debug (returncode={proc.returncode})"
         )
-        proc = _smoke_test_run(executable, '--debug')
-        debug_stdout = proc.stdout.decode('utf-8')
-        debug_stderr = proc.stderr.decode('utf-8')
+        if debug:
+            debug_stdout = None
+            debug_stderr = None
+        else:
+            proc = _smoke_test_run(executable, '--debug')
+            debug_stdout = proc.stdout.decode('utf-8')
+            debug_stderr = proc.stderr.decode('utf-8')
 
         lines = [
             "Unexpected output!",
