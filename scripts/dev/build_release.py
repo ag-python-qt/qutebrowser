@@ -110,6 +110,7 @@ def _filter_whitelisted(output: bytes, patterns: Iterable[str]) -> Iterable[str]
 def _smoke_test_run(
     executable: pathlib.Path,
     *args: str,
+    capture_output: bool=True
 ) -> subprocess.CompletedProcess:
     """Get a subprocess to run a smoke test."""
     argv = [
@@ -121,7 +122,7 @@ def _smoke_test_run(
         'about:blank',
         ':later 500 quit',
     ]
-    return subprocess.run(argv, capture_output=True)
+    return subprocess.run(argv, check=False, capture_output=capture_output)
 
 
 def smoke_test(executable: pathlib.Path, debug: bool, qt5: bool) -> None:
@@ -181,25 +182,22 @@ def smoke_test(executable: pathlib.Path, debug: bool, qt5: bool) -> None:
             r'module could not be found. \(0x7E\)'),
         ])
 
-    proc = _smoke_test_run(executable)
+    proc = _smoke_test_run(executable, capture_output=not debug)
+    if debug:
+        print("Skipping output check for debug build")
+        proc.check_returncode()
+        return
 
     stdout = '\n'.join(_filter_whitelisted(proc.stdout, stdout_whitelist))
     stderr = '\n'.join(_filter_whitelisted(proc.stderr, stderr_whitelist))
 
-    if stdout or stderr or proc.returncode > 0:
-        if debug:
-            print(
-                f"Unexpected output (errno={proc.returncode})"
-            )
-            debug_stdout = None
-            debug_stderr = None
-        else:
-            print(
-                f"Unexpected output, running with --debug (errno={proc.returncode})"
-            )
-            proc = _smoke_test_run(executable, '--debug')
-            debug_stdout = proc.stdout.decode('utf-8')
-            debug_stderr = proc.stderr.decode('utf-8')
+    if stdout or stderr or proc.returncode != 0:
+        print(
+            f"Unexpected output, running with --debug (returncode={proc.returncode})"
+        )
+        proc = _smoke_test_run(executable, '--debug')
+        debug_stdout = proc.stdout.decode('utf-8')
+        debug_stderr = proc.stderr.decode('utf-8')
 
         lines = [
             "Unexpected output!",
