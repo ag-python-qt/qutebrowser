@@ -17,6 +17,10 @@ jobs:
             args:
             toxenv: build-release
             name: macos
+          - os: macos-11
+            args: --debug
+            toxenv: build-release
+            name: macos
           - os: windows-2019
             args: --64bit
             toxenv: build-release
