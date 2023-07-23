@@ -15,12 +15,12 @@ jobs:
         include:
           - os: macos-11
             args:
-            toxenv: build-release-qt6
-            name: qt6-macos-debug
+            toxenv: build-release
+            name: macos
           - os: windows-2019
             args: --64bit
-            toxenv: build-release-qt6
-            name: qt6-windows-64bit-debug
+            toxenv: build-release
+            name: windows-64bit
     runs-on: "${{ matrix.os }}"
     timeout-minutes: 45
     steps:
