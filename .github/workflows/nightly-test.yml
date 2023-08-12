@@ -18,13 +18,19 @@ jobs:
             toxenv: build-release
             name: macos
           - os: macos-11
+            args:
+            toxenv: build-release-qt5
+            name: qt5-macos
+          - os: macos-11
             args: --debug
             toxenv: build-release
             name: macos
           - os: windows-2019
-            args: --64bit
             toxenv: build-release
-            name: windows-64bit
+            name: windows
+          - os: windows-2019
+            toxenv: build-release-qt5
+            name: qt5-windows
     runs-on: "${{ matrix.os }}"
     timeout-minutes: 45
     steps:
